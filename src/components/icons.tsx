@@ -59,6 +59,11 @@ import moonOutline from "@/assets/icons/moon-outline.svg?raw";
 import sunnyOutline from "@/assets/icons/sunny-outline.svg?raw";
 import helpBuoyOutline from "@/assets/icons/help-buoy-outline.svg?raw";
 import informationCircleOutline from "@/assets/icons/information-circle-outline.svg?raw";
+import leafOutline from "@/assets/icons/leaf-outline.svg?raw";
+import bedOutline from "@/assets/icons/bed-outline.svg?raw";
+import filmOutline from "@/assets/icons/film-outline.svg?raw";
+import storefrontOutline from "@/assets/icons/storefront-outline.svg?raw";
+import buildOutline from "@/assets/icons/build-outline.svg?raw";
 
 function parse(raw: string) {
   const viewBox = raw.match(/viewBox="([^"]+)"/)?.[1] ?? "0 0 512 512";
@@ -140,3 +145,8 @@ export const MoonIcon = createIcon(moonOutline, "MoonIcon");
 export const SunnyIcon = createIcon(sunnyOutline, "SunnyIcon");
 export const HelpBuoyIcon = createIcon(helpBuoyOutline, "HelpBuoyIcon");
 export const InformationCircleIcon = createIcon(informationCircleOutline, "InformationCircleIcon");
+export const LeafIcon = createIcon(leafOutline, "LeafIcon");
+export const BedIcon = createIcon(bedOutline, "BedIcon");
+export const FilmIcon = createIcon(filmOutline, "FilmIcon");
+export const StorefrontIcon = createIcon(storefrontOutline, "StorefrontIcon");
+export const BuildIcon = createIcon(buildOutline, "BuildIcon");

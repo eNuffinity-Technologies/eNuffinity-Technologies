@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Logo from "./Logo";
 import { GithubLogoIcon, LinkedinLogoIcon, FacebookLogoIcon } from "@/components/icons";
 import { LegalModal } from "@/components/LegalModal";
@@ -5,20 +6,21 @@ import type { LegalPolicyId } from "@/data/legalContent";
 
 const footerLinks = {
   services: [
-    { name: "Web Development", href: "#services" },
-    { name: "Mobile Development", href: "#services" },
-    { name: "Desktop Applications", href: "#services" },
-    { name: "API & Integrations", href: "#services" },
-    { name: "SaaS Products", href: "#services" },
-    { name: "Cloud & DevOps", href: "#services" },
-    { name: "AI / Automation Services", href: "#services" },
+    { name: "Web Development", href: "/services" },
+    { name: "Mobile Development", href: "/services" },
+    { name: "Desktop Applications", href: "/services" },
+    { name: "API & Integrations", href: "/services" },
+    { name: "SaaS Products", href: "/services" },
+    { name: "Cloud & DevOps", href: "/services" },
+    { name: "AI / Automation Services", href: "/services" },
   ],
   company: [
-    { name: "About Us", href: "#about" },
-    { name: "Our Process", href: "#process" },
-    { name: "Tech Stack", href: "#tech" },
-    { name: "FAQ", href: "#faq" },
-    { name: "Contact", href: "#contact" },
+    { name: "Home", href: "/" },
+    { name: "About Us", href: "/about" },
+    { name: "Pricing", href: "/pricing" },
+    { name: "Our Process", href: "/processes" },
+    { name: "FAQ", href: "/faq" },
+    { name: "Contact", href: "/contact" },
   ],
   legal: [
     { name: "Privacy Policy", policy: "privacy" },
@@ -74,9 +76,9 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.services.map((link) => (
                 <li key={link.name}>
-                  <a href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -88,9 +90,9 @@ const Footer = () => {
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
-                  <a href={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  <Link to={link.href} className="text-sm text-muted-foreground hover:text-primary transition-colors">
                     {link.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>

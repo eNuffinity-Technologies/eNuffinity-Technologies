@@ -1,30 +1,16 @@
-import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import ServicesSection from "@/components/ServicesSection";
-import AboutSection from "@/components/AboutSection";
-import TechStackSection from "@/components/TechStackSection";
-import PricingSection from "@/components/PricingSection";
-import FAQSection from "@/components/FAQSection";
-import ContactSection from "@/components/ContactSection";
-import Footer from "@/components/Footer";
+import WhatWeDoSection from "@/components/WhatWeDoSection";
+import WhyChooseUsSection from "@/components/WhyChooseUsSection";
+import IndustriesSection from "@/components/IndustriesSection";
 
 const Index = () => {
   return (
-    <div className="min-h-screen w-full flex flex-col bg-background">
-      <Navbar />
-
-      <main className="flex-1 w-full">
-        <HeroSection />
-        <ServicesSection />
-        <AboutSection />
-        <PricingSection />
-        <TechStackSection />
-        <FAQSection />
-        <ContactSection />
-      </main>
-
-      <Footer />
-    </div>
+    <>
+      <HeroSection />
+      <WhatWeDoSection />
+      <WhyChooseUsSection />
+      <IndustriesSection />
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import type { FormEvent } from "react";
+import { useSearchParams } from "react-router-dom";
 
 import {
   MailIcon,
@@ -22,6 +23,24 @@ import emailjs from "@emailjs/browser";
 const SERVICE_ID = "service_osg1frl";
 const TEMPLATE_ID = "template_5mmkua3";
 const PUBLIC_KEY = "5IpP-QjM-4llqtT6Q";
+// Auto-reply sent to the person who submitted the form, confirming receipt.
+// Create this template in the EmailJS dashboard (see chat for the exact setup steps),
+// then replace this placeholder with its real template ID.
+const CONFIRMATION_TEMPLATE_ID = "template_confirmation";
+
+const PROJECT_TYPE_OPTIONS = [
+  "Web Development",
+  "Mobile Development",
+  "Desktop Application",
+  "API / Backend Development",
+  "Integration Services",
+  "SaaS Product",
+  "CRM / Internal Tools",
+  "Process Automation",
+  "Other",
+];
+
+const CARE_PLAN_OPTIONS = ["Basic Care", "Growth Care", "Premium Care"];
 
 const trustPoints = [
   "NDA signed before discovery — your IP is protected",
@@ -64,6 +83,13 @@ const contactMethods = [
 const ContactSection = () => {
   const formRef = useRef<HTMLFormElement>(null);
   const [sending, setSending] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  const prefilledProjectType = searchParams.get("project_type") ?? "";
+  const initialProjectType = PROJECT_TYPE_OPTIONS.includes(prefilledProjectType) ? prefilledProjectType : "";
+
+  const prefilledCarePlan = searchParams.get("care_plan") ?? "";
+  const initialCarePlan = CARE_PLAN_OPTIONS.includes(prefilledCarePlan) ? prefilledCarePlan : "";
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -73,6 +99,16 @@ const ContactSection = () => {
     try {
       await emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, formRef.current, PUBLIC_KEY);
       toast.success("Message sent! We'll get back to you shortly.");
+
+      // Best-effort auto-reply to the sender. Never blocks or fails the main
+      // submission — if the confirmation template isn't set up yet, this just
+      // logs a warning instead of surfacing an error to the client.
+      try {
+        await emailjs.sendForm(SERVICE_ID, CONFIRMATION_TEMPLATE_ID, formRef.current, PUBLIC_KEY);
+      } catch (confirmationError) {
+        console.warn("Confirmation email not sent:", confirmationError);
+      }
+
       formRef.current.reset();
     } catch {
       toast.error("Failed to send message. Please try again or contact us directly.");
@@ -82,7 +118,7 @@ const ContactSection = () => {
   };
 
   return (
-    <section id="contact" className="py-14 bg-secondary/20 relative overflow-hidden">
+    <section id="contact" className="pt-28 pb-14 md:pt-32 bg-secondary/20 relative overflow-hidden">
       {/* Decorative atmospheric layers */}
       <div className="absolute inset-0 hero-gradient opacity-40 pointer-events-none" />
       <div className="absolute top-10 left-10 w-72 h-72 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
@@ -94,19 +130,21 @@ const ContactSection = () => {
           <span className="inline-block text-xs font-bold tracking-widest text-primary uppercase mb-3">
             Let's Build Together
           </span>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">
             Start a <span className="heading-accent">conversation</span>
-          </h2>
+          </h1>
           <p className="text-muted-foreground">
             Tell us about your goals — we'll respond with a clear next step, not a sales pitch.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-5 gap-8 items-start">
-          {/* Left — Trust + Contact info (2 cols) */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Discovery call card */}
-            <div className="border border-border rounded-2xl p-6 bg-card relative overflow-hidden">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5 lg:gap-8 items-start">
+          {/* Left — Trust + Contact info (2 cols). `contents` on mobile lets these
+              three cards reorder individually alongside the form below; `lg:block`
+              restores the normal stacked column on desktop, unchanged. */}
+          <div className="contents lg:block lg:col-span-2 lg:space-y-6">
+            {/* Discovery call card — shown first on mobile */}
+            <div className="order-1 border border-border rounded-2xl p-6 bg-card relative overflow-hidden">
               <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-primary/10 blur-2xl" />
               <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
@@ -133,8 +171,8 @@ const ContactSection = () => {
               </div>
             </div>
 
-            {/* Contact channels */}
-            <div className="rounded-2xl bg-card border border-border/50 p-6">
+            {/* Contact channels — shown last on mobile */}
+            <div className="order-3 rounded-2xl bg-card border border-border/50 p-6">
               <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
                 Reach us directly
               </h3>
@@ -169,8 +207,8 @@ const ContactSection = () => {
               </div>
             </div>
 
-            {/* Reassurance footer */}
-            <div className="glass rounded-xl p-4 flex items-center gap-3">
+            {/* Reassurance footer — shown very last on mobile */}
+            <div className="order-4 glass rounded-xl p-4 flex items-center gap-3">
               <ShieldCheckmarkIcon className="w-5 h-5 text-primary flex-shrink-0" />
               <p className="text-xs text-muted-foreground leading-relaxed">
                 Your information is handled in line with <span className="text-foreground font-medium">POPIA</span> and{" "}
@@ -179,8 +217,9 @@ const ContactSection = () => {
             </div>
           </div>
 
-          {/* Right — Form (3 cols) */}
-          <div className="lg:col-span-3">
+          {/* Right — Form (3 cols); shown second on mobile, between the discovery
+              call card and the contact-channels/reassurance cards above. */}
+          <div className="order-2 lg:order-none lg:col-span-3">
             <div className="border border-border rounded-2xl p-8 bg-card relative overflow-hidden">
               <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-accent/10 blur-3xl pointer-events-none" />
 
@@ -248,13 +287,14 @@ const ContactSection = () => {
                     </div>
                     <div>
                       <label htmlFor="phone" className="block text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">
-                        Phone (optional)
+                        Phone
                       </label>
                       <input
                         id="phone"
                         name="phone"
                         type="tel"
                         autoComplete="tel"
+                        required
                         className="w-full px-4 py-3 rounded-lg bg-secondary/50 border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors"
                         placeholder="+27..."
                       />
@@ -282,18 +322,36 @@ const ContactSection = () => {
                     <select
                       id="project_type"
                       name="project_type"
+                      defaultValue={initialProjectType}
+                      key={initialProjectType}
                       className="w-full px-4 py-3 rounded-lg bg-secondary/50 border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-foreground"
                     >
                       <option value="">Select a type</option>
-                      <option value="Web Development">Web Development</option>
-                      <option value="Mobile Development">Mobile Development</option>
-                      <option value="Desktop Application">Desktop Application</option>
-                      <option value="API / Backend Development">API / Backend Development</option>
-                      <option value="Integration Services">Integration Services</option>
-                      <option value="SaaS Product">SaaS Product</option>
-                      <option value="CRM / Internal Tools">CRM / Internal Tools</option>
-                      <option value="Process Automation">Process Automation</option>
-                      <option value="Other">Other</option>
+                      {PROJECT_TYPE_OPTIONS.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label htmlFor="care_plan" className="block text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">
+                      Care Plan (optional)
+                    </label>
+                    <select
+                      id="care_plan"
+                      name="care_plan"
+                      defaultValue={initialCarePlan}
+                      key={initialCarePlan}
+                      className="w-full px-4 py-3 rounded-lg bg-secondary/50 border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-foreground"
+                    >
+                      <option value="">Not interested in a care plan</option>
+                      {CARE_PLAN_OPTIONS.map((plan) => (
+                        <option key={plan} value={plan}>
+                          {plan}
+                        </option>
+                      ))}
                     </select>
                   </div>
 

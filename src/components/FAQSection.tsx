@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ChevronForwardIcon,
   ShieldIcon,
@@ -16,7 +17,7 @@ import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 const faqs = [
   {
     question: "What pricing models do you offer?",
-    answer: "We offer flexible pricing: fixed-price projects for well-defined scopes, hourly rates for ongoing work, and monthly retainers for continuous development and support. We'll recommend the best model based on your project needs.",
+    answer: "We offer from-price packages for each project type — Basic, Standard, and Premium — so you know the starting cost upfront, plus optional monthly Care Plans for ongoing support once you're live. Complex or custom requirements are quoted after a discovery call.",
     icon: CashIcon,
     category: "Business",
   },
@@ -52,13 +53,13 @@ const faqs = [
   },
   {
     question: "Do you provide post-launch support?",
-    answer: "Yes, we offer comprehensive post-launch maintenance packages including bug fixes, performance monitoring, security updates, and feature enhancements. Our 24/7 support ensures your software stays in top shape.",
+    answer: "Yes — every package includes 30 days to 3 months of post-launch bug-fix support depending on tier. After that, our monthly Care Plans (Basic, Growth, or Premium) cover ongoing updates, monitoring, and priority support.",
     icon: HeadsetIcon,
     category: "Support",
   },
   {
     question: "What industries do you serve?",
-    answer: "We work across fintech, healthcare, e-commerce, logistics, education, real estate, and more. Our integration expertise with verification and compliance APIs makes us particularly strong in regulated industries.",
+    answer: "We work across 16+ industries — from regulated sectors like fintech, healthcare, insurance, and forensic services, to commerce and operations like e-commerce, retail, logistics, manufacturing, and agriculture, plus real estate, construction, education, hospitality, and more. See our Industries page for the full list.",
     icon: GlobeIcon,
     category: "Business",
   },
@@ -85,7 +86,7 @@ const FAQSection = () => {
   };
 
   return (
-    <section id="faq" className="py-14 relative overflow-hidden">
+    <section id="faq" className="pt-28 pb-14 md:pt-32 relative overflow-hidden">
       <div className="absolute inset-0 hero-gradient opacity-30" />
 
       {/* Decorative elements */}
@@ -105,11 +106,11 @@ const FAQSection = () => {
           <span className="text-primary font-mono text-sm tracking-widest uppercase mb-3 block">
             // FAQ
           </span>
-          <h2 className="text-3xl md:text-5xl font-bold mb-5 leading-tight" style={{ lineHeight: '1.1' }}>
+          <h1 className="text-3xl md:text-5xl font-bold mb-5 leading-tight" style={{ lineHeight: '1.1' }}>
             Questions we get
             <br />
             <span className="heading-accent">asked the most</span>
-          </h2>
+          </h1>
           <p className="text-muted-foreground text-lg">
             Browse by topic, or ask us something we haven't covered yet.
           </p>
@@ -251,13 +252,13 @@ const FAQSection = () => {
                 </p>
               </div>
             </div>
-            <a
-              href="#contact"
+            <Link
+              to="/contact"
               className="shrink-0 inline-flex items-center gap-2 bg-primary text-primary-foreground font-semibold hover:bg-primary/90 px-6 py-3 rounded-lg hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-100 transition-all duration-300 text-sm"
             >
               Get in Touch
               <ChevronForwardIcon className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         </div>
       </div>

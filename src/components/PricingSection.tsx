@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import {
   CheckmarkIcon,
   CloseIcon,
@@ -440,18 +441,26 @@ const carePlans = [
   },
 ];
 
+const categoryProjectType: Record<string, string> = {
+  web: "Web Development",
+  api: "API / Backend Development",
+  desktop: "Desktop Application",
+  mobile: "Mobile Development",
+  saas: "SaaS Product",
+};
+
 const PricingSection = () => {
   const [activeCategory, setActiveCategory] = useState("web");
   const active = categories.find((c) => c.id === activeCategory)!;
 
   return (
-    <section id="pricing" className="py-14 bg-secondary/20">
+    <section id="pricing" className="pt-28 pb-14 md:pt-32 bg-secondary/20">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto mb-8">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">
             Our <span className="heading-accent">Packages</span>
-          </h2>
+          </h1>
           <p className="text-muted-foreground">
             Transparent pricing across all our development services.
             Choose a category and package that fits your needs — no hidden costs.
@@ -584,12 +593,12 @@ const PricingSection = () => {
                 <Button
                   variant={pkg.popular ? "hero" : "heroOutline"}
                   className="w-full py-6 text-base font-semibold"
-                  onClick={() =>
-                    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
-                  }
+                  asChild
                 >
-                  Get Started
-                  <OpenIcon className="w-4 h-4 ml-1" />
+                  <Link to={`/contact?project_type=${encodeURIComponent(categoryProjectType[activeCategory])}`}>
+                    Get Started
+                    <OpenIcon className="w-4 h-4 ml-1" />
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -651,10 +660,12 @@ const PricingSection = () => {
                   <Button
                     variant="heroOutline"
                     className="w-full py-6 text-base font-semibold"
-                    onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
+                    asChild
                   >
-                    Choose Plan
-                    <OpenIcon className="w-4 h-4 ml-1" />
+                    <Link to={`/contact?care_plan=${encodeURIComponent(plan.name)}`}>
+                      Choose Plan
+                      <OpenIcon className="w-4 h-4 ml-1" />
+                    </Link>
                   </Button>
                 </div>
               </div>

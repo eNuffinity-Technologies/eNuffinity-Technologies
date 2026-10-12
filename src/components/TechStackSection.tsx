@@ -21,7 +21,7 @@ const steps = [
 
 const HowWeWorkSection = () => {
   return (
-    <section id="process" className="py-14 relative overflow-hidden">
+    <section id="process" className="pt-28 pb-14 md:pt-32 relative overflow-hidden">
       <div className="absolute inset-0 grid-pattern opacity-20" />
 
       <div className="container mx-auto px-4 relative z-10">
@@ -31,9 +31,9 @@ const HowWeWorkSection = () => {
             <span className="inline-block text-xs font-bold tracking-widest text-primary uppercase mb-3">
               Our Methodology
             </span>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">
               How We <span className="heading-accent">Work</span>
-            </h2>
+            </h1>
             <p className="text-muted-foreground">
               A transparent, Agile-driven process from discovery to deployment — with security
               and compliance baked into every step.
