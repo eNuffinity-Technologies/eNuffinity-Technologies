@@ -1,0 +1,125 @@
+# eNuffinity website pipeline
+#
+#   any branch / pull request  ->  check: lint, test, build
+#   push to develop            ->  check, then deploy to UAT        (uat.enuffinity.co.za)
+#   push to main               ->  check, then deploy to Production (enuffinity.co.za)
+#
+# Deploys switch on by themselves once AWS is set up and the GitHub variables exist
+# (see .github/DEPLOYMENT.md). Until then the "deploy" job is skipped and only the checks run.
+name: Website
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:        # "Run workflow" button: redeploy the selected branch
+
+permissions:
+  contents: read
+
+concurrency:
+  group: website-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, test & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint
+        # The codebase currently has existing lint errors, so lint reports but doesn't block yet.
+        # Once they're fixed, delete the next line so new lint errors block deploys too.
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Save build
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: dist/
+          retention-days: 7
+
+  deploy:
+    name: Deploy to ${{ github.ref_name == 'main' && 'Production' || 'UAT' }}
+    needs: check
+    # Only real pushes to develop/main, and only once AWS is connected (AWS_ROLE_ARN is set)
+    if: >-
+      github.event_name != 'pull_request' &&
+      (github.ref_name == 'main' || github.ref_name == 'develop') &&
+      vars.AWS_ROLE_ARN != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write       # lets GitHub prove its identity to AWS (OIDC) - no AWS keys stored in GitHub
+    environment:
+      name: ${{ github.ref_name == 'main' && 'production' || 'uat' }}
+      url: https://${{ vars.DOMAIN }}
+    env:
+      SITE_BUCKET: ${{ vars.SITE_BUCKET }}
+      DISTRIBUTION_ID: ${{ vars.DISTRIBUTION_ID }}
+    steps:
+      - name: Check settings
+        run: |
+          missing=""
+          for v in SITE_BUCKET DISTRIBUTION_ID; do [ -n "${!v}" ] || missing="$missing $v"; done
+          [ -z "$missing" ] || { echo "::error::Set these variables on the '${{ github.ref_name == 'main' && 'production' || 'uat' }}' environment:$missing"; exit 1; }
+
+      # Deploy exactly the files that passed the checks
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: dist
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      - name: Upload to S3
+        run: |
+          # Vite's fingerprinted files (e.g. assets/index-CKjMQ00S.js) never change, so browsers keep them a year.
+          HASHED='assets/*-????????.*'
+          aws s3 sync dist "s3://$SITE_BUCKET" --exclude '*' --include "$HASHED" \
+            --cache-control 'public,max-age=31536000,immutable' --only-show-errors
+
+          # Everything else (pages, favicon, share image, robots.txt, sitemap.xml) is checked on every visit,
+          # so updates show immediately. --delete removes files that no longer exist in the build.
+          aws s3 sync dist "s3://$SITE_BUCKET" --exclude "$HASHED" --delete \
+            --cache-control 'public,max-age=0,must-revalidate' --only-show-errors
+
+          # Remove fingerprinted files from older builds
+          aws s3 sync dist "s3://$SITE_BUCKET" --exclude '*' --include "$HASHED" --delete --only-show-errors
+
+          echo "Uploaded $(find dist -type f | wc -l) files"
+
+      - name: Refresh CloudFront
+        run: |
+          id=$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' \
+                 --query Invalidation.Id --output text)
+          aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION_ID" --id "$id"
+
+      - name: Smoke test
+        if: vars.DOMAIN != ''
+        run: |
+          for path in / /pricing /industries/fintech; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "https://${{ vars.DOMAIN }}$path")
+            echo "$path -> $code"
+            [ "$code" = "200" ] || { echo "::error::https://${{ vars.DOMAIN }}$path returned $code"; exit 1; }
+          done
