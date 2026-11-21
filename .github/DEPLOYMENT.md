@@ -51,16 +51,20 @@ The checks run as soon as this is merged. Deploys stay switched off until stage 
 
 ## Stage 2: when the website moves to AWS
 
-1. In AWS, turn on **advanced features** for the `enuffinity-website` project (needed for us-east-1).
-2. Create the AWS side with the starter kit (all in **us-east-1**; the app-server `platform.yaml` isn't needed for the website):
+The `enuffinity-website` AWS project is locked to **eu-north-1 (Stockholm)**, so advanced features are **not** needed (and turning them on would permanently remove the spend limit). Only the certificates go in us-east-1, which the project allows for Certificate Manager.
+
+1. **Certificates** (us-east-1), one per environment, validated with a DNS CNAME record:
+   - UAT: `uat.enuffinity.co.za`
+   - Production: `enuffinity.co.za` + `www.enuffinity.co.za`
+2. **Stacks** from the starter kit, in **eu-north-1** (the app-server `platform.yaml` isn't needed for the website):
    - `infra/github-deploy-role.yaml`, once. Its `RoleArn` output is your `AWS_ROLE_ARN`. It only accepts this repo's `uat` and `production` environments.
-   - `infra/static-site.yaml`, twice: one stack for UAT, one for Production, both with `SiteType=spa`.
+   - `infra/static-site.yaml`, twice: UAT and Production, both with `SiteType=spa` and that environment's `CertificateArn`. Keep `CreateDnsRecords=false` for Production until you switch the live domain over from HostAfrica.
 3. In GitHub → **Settings → Secrets and variables → Actions → Variables** (repository):
 
    | Variable | Value |
    |---|---|
    | `AWS_ROLE_ARN` | the deploy role's ARN. **Setting this switches deploys on.** |
-   | `AWS_REGION` | `us-east-1` |
+   | `AWS_REGION` | `eu-north-1` |
 
 4. GitHub → **Settings → Environments**: create `uat` and `production`, each with:
 
